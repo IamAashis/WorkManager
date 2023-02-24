@@ -11,7 +11,6 @@ import java.lang.Thread.sleep
  * Created by Aashis on 24,February,2023
  */
 
-
 class NotificationWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
     override fun doWork(): Result {
@@ -23,6 +22,5 @@ class NotificationWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, p
 
         return Result.success()
     }
-
 }
 

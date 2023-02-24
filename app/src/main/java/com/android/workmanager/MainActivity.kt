@@ -4,7 +4,6 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
 import android.text.format.DateFormat
-import android.widget.TimePicker
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.*
 import com.android.workmanager.databinding.ActivityMainBinding
@@ -14,7 +13,6 @@ import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
-
     private var binding: ActivityMainBinding? = null
     var cal = Calendar.getInstance()
     var year = 0;
@@ -47,7 +45,7 @@ class MainActivity : AppCompatActivity() {
             //            this.month = cal.get(Calendar.MONTH)
         }
 
-    fun clickListener() {
+    private fun clickListener() {
         binding?.txtDate?.setOnClickListener {
             DatePickerDialog(
                 this, dateSetListener,
@@ -70,8 +68,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val timeSetListener = object : TimePickerDialog.OnTimeSetListener {
-        override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+    private val timeSetListener =
+        TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
             val myFormat = "EEE, d MMM yyyy HH:mm:ss Z"
             val sdf = SimpleDateFormat(myFormat, Locale.US)
             this@MainActivity.minute = cal.get(Calendar.MINUTE)
@@ -80,9 +78,8 @@ class MainActivity : AppCompatActivity() {
             cal.set(Calendar.MINUTE, minute)
             binding?.txvTime?.text = sdf.format(cal.time)
         }
-    }
 
-    fun createConstraints() = Constraints.Builder()
+    private fun createConstraints() = Constraints.Builder()
         .setRequiresCharging(true)
         .setRequiresBatteryNotLow(true)
         .build()
@@ -98,10 +95,23 @@ class MainActivity : AppCompatActivity() {
             )
             .build()
 
+    private fun createWorkRequest2(data: Data) =
+        OneTimeWorkRequestBuilder<NotificationWorker>()
+            .setConstraints(createConstraints())
+            .setInitialDelay(10, TimeUnit.SECONDS)
+            .build()
+
     private fun startWork() {
         val work = createWorkRequest(Data.EMPTY)
         WorkManager.getInstance(applicationContext)
             .enqueueUniquePeriodicWork("Sleep work", ExistingPeriodicWorkPolicy.REPLACE, work)
     }
 
+    fun oneTimeWorkRequest() {
+        val workRequest2 = OneTimeWorkRequestBuilder<NotificationWorker>()
+            .setConstraints(createConstraints())
+            .setInitialDelay(10, TimeUnit.SECONDS)
+            .build()
+        WorkManager.getInstance(this).enqueue(workRequest2)
+    }
 }
