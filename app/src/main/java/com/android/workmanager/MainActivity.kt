@@ -1,20 +1,16 @@
 package com.android.workmanager
 
 import android.app.DatePickerDialog
-import android.app.Notification
 import android.app.TimePickerDialog
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.widget.TimePicker
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.*
-import androidx.work.PeriodicWorkRequest.Builder
 import com.android.workmanager.databinding.ActivityMainBinding
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
-
-var workManager: WorkManager? = null
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +23,8 @@ class MainActivity : AppCompatActivity() {
     var hour = 0;
     var minute = 0;
     var timeMiliSecond = ""
+    var workManager: WorkManager? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -68,14 +66,6 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
         binding?.btnSubmit?.setOnClickListener {
-//            workManager = WorkManager.getInstance()
-//
-//            val periodicWorkRequest = PeriodicWorkRequest.Builder(
-//                NotificationWorker::class.java, 24, TimeUnit.HOURS
-//            )
-//                .setConstraints(createConstraints())
-//                .build()
-//            workManager?.enqueue(periodicWorkRequest)
             startWork()
         }
     }
@@ -97,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         .setRequiresBatteryNotLow(true)
         .build()
 
-    fun createWorkRequest(data: Data) =
+    private fun createWorkRequest(data: Data) =
         PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES)
             .setInputData(data)
             .setConstraints(createConstraints())
@@ -108,11 +98,10 @@ class MainActivity : AppCompatActivity() {
             )
             .build()
 
-    fun startWork() {
+    private fun startWork() {
         val work = createWorkRequest(Data.EMPTY)
         WorkManager.getInstance(applicationContext)
             .enqueueUniquePeriodicWork("Sleep work", ExistingPeriodicWorkPolicy.REPLACE, work)
     }
-
 
 }

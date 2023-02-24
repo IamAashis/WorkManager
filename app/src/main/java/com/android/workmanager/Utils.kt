@@ -18,10 +18,6 @@ import androidx.core.app.NotificationManagerCompat
  * Created by Aashis on 24,February,2023
  */
 object Utils {
-//    const val NOTIFICATION_ID = 22
-//    private const val CHANNEL_ID = "notify"
-    private const val CHANNEL_NAME = "workmanager-reminder"
-    // Name of Notification Channel for verbose notifications of background work
     @JvmField val VERBOSE_NOTIFICATION_CHANNEL_NAME: CharSequence =
         "Verbose WorkManager Notifications"
     const val VERBOSE_NOTIFICATION_CHANNEL_DESCRIPTION =
@@ -30,30 +26,6 @@ object Utils {
     const val CHANNEL_ID = "VERBOSE_NOTIFICATION"
     const val NOTIFICATION_ID = 1
     const val ONE_SECOND_IN_MILLIS: Long = 1000
-
-    fun sendNotification(context: Context) {
-        val notificationManager =
-            context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel1 = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            channel1.enableVibration(true)
-            channel1.enableLights(true)
-            channel1.lightColor = R.color.background_light
-            channel1.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-            notificationManager.createNotificationChannel(channel1)
-        }
-        val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("WorkManager Sample")
-            .setContentText("WorkManager Started")
-            .setAutoCancel(true)
-            .setSmallIcon(R.drawable.ic_delete)
-        notificationManager.notify(1, builder.build())
-    }
-
 
     fun makeStatusNotification(message: String, context: Context) {
 
