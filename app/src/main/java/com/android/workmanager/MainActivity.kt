@@ -1,17 +1,21 @@
 package com.android.workmanager
 
 import android.app.DatePickerDialog
+import android.app.Notification
 import android.app.TimePickerDialog
 import android.os.Bundle
 import android.text.format.DateFormat
-import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.appcompat.app.AppCompatActivity
-import androidx.work.OneTimeWorkRequest
+import androidx.work.*
+import androidx.work.PeriodicWorkRequest.Builder
 import com.android.workmanager.databinding.ActivityMainBinding
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+
+var workManager: WorkManager? = null
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     var day = 0;
     var hour = 0;
     var minute = 0;
-
+    var timeMiliSecond = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -31,20 +35,19 @@ class MainActivity : AppCompatActivity() {
         clickListener()
     }
 
-    private val dateSetListener = object : DatePickerDialog.OnDateSetListener {
-        override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
+    private val dateSetListener =
+        DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
             cal.set(Calendar.YEAR, year)
             cal.set(Calendar.MONTH, month)
             cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
-            val myFormat = "MM/dd/yyyy" // mention the format you need
+            val myFormat = "MM/dd/yyyy" // mention the format you needpo
             val sdf = SimpleDateFormat(myFormat, Locale.UK)
             binding?.txvDate?.text = sdf.format(cal.time)
-//            this.year= cal.get(Calendar.YEAR)
-//            this.day = cal.get(Calendar.MONTH)
-//            this.month = cal.get(Calendar.MONTH)
+            //            this.year= cal.get(Calendar.YEAR)
+            //            this.day = cal.get(Calendar.MONTH)
+            //            this.month = cal.get(Calendar.MONTH)
         }
-    }
 
     fun clickListener() {
         binding?.txtDate?.setOnClickListener {
@@ -65,15 +68,15 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
         binding?.btnSubmit?.setOnClickListener {
-
-/*            NotificationMan.Builder(context = this, classPathWillBeOpen = "com.notification.man.MainActivity") // the activity's path that you want to open when the notification is clicked
-                .setTitle(title = "test title") // optional
-                .setDescription(desc = "test desc") // optional
-                .setThumbnailUrl(thumbnailUrl = "image url") // optional
-                .setTimeInterval(timeInterval = 10L) // needs secs - default is 5 secs
-                .setNotificationType(type = NotificationTypes.IMAGE.type) // optional - default type is TEXT
-                .setNotificationChannelConfig(config = createNotificationManChannelConfig()) // optional
-                .fire()*/
+//            workManager = WorkManager.getInstance()
+//
+//            val periodicWorkRequest = PeriodicWorkRequest.Builder(
+//                NotificationWorker::class.java, 24, TimeUnit.HOURS
+//            )
+//                .setConstraints(createConstraints())
+//                .build()
+//            workManager?.enqueue(periodicWorkRequest)
+            startWork()
         }
     }
 
@@ -87,6 +90,28 @@ class MainActivity : AppCompatActivity() {
             cal.set(Calendar.MINUTE, minute)
             binding?.txvTime?.text = sdf.format(cal.time)
         }
+    }
+
+    fun createConstraints() = Constraints.Builder()
+        .setRequiresCharging(true)
+        .setRequiresBatteryNotLow(true)
+        .build()
+
+    fun createWorkRequest(data: Data) =
+        PeriodicWorkRequestBuilder<NotificationWorker>(15, TimeUnit.MINUTES)
+            .setInputData(data)
+            .setConstraints(createConstraints())
+            .setBackoffCriteria(
+                BackoffPolicy.LINEAR,
+                PeriodicWorkRequest.MIN_BACKOFF_MILLIS,
+                TimeUnit.MILLISECONDS
+            )
+            .build()
+
+    fun startWork() {
+        val work = createWorkRequest(Data.EMPTY)
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniquePeriodicWork("Sleep work", ExistingPeriodicWorkPolicy.REPLACE, work)
     }
 
 
